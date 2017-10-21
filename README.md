@@ -76,3 +76,119 @@ npm install -g nsp
 nsp check
 ```
 
+## Development web server
+### Tasks
+1. Review Development webserver options
+2. Configure a development webserver
+3. Services for sharing your work
+
+### Some Options
+1. **http-server** 
+    - ultra simple
+    - Simple command servers current directory
+2. **live-server**
+    - light-weight
+    - support live reloading
+3. **express** 
+    - Comprehensive
+    - Highly configurable
+    - Production grade
+    - Can run it everywhere
+4. **budo** 
+    - Integrates with browserify
+    - Includes **hot-reloading**
+5. **webpack-dev-server**
+    - Build in webpack
+    - Serves from memory
+    - Includes hot-reloading
+6. **browser-sync**
+    - Dedicated ip for sharing work in lan
+    - All interactions remain in sync across different devices
+    - Great for cross-device testing
+    - Integrates with webpack, express
+
+Out of this pool of dev-Servers we will be pulling express
+
+### Integrate Express
+1. Start by creating a folder buildScripts folder in the root then inside that create a file srcServer.js
+2. In that srcServer.js file add express code that we will discuss in separate express course. Link will be uploaded here only when course is ready
+```
+var express = require('express');
+var path = require('path');
+var open = require('open');
+
+var port = 5001;
+var app = express();
+
+app.get('/', function(req, res){
+res.sendFile(path.join(__dirname, '../src/index.html'));
+});
+
+app.listen(port, function(err){
+    if(err){
+console.log(err);
+    }
+else{
+open('http://localhost:'+port);
+}
+});
+```
+3. Create a folder src in project root, inside that folder create a file index.html with content given below
+```
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Starter Application</title>
+    <meta charset="utf-8">
+    <meta name="keywords" content="javascript, good practices, starter kit, from testing to deployment">
+</head>
+
+<body>
+    <h1>Starter Kit</h1>
+</body>
+
+</html>
+```
+4. Run the server by typing following command in terminal
+```
+node buildScripts/srcServer.js
+```
+This should open the webpage in the browser with h1 tag
+
+### Sharing work in progress
+One option is to deploy directly to AWS or any other hosting service but that consume time and money so it they both are important to you keep reading
+
+#### Options for sharing
+1. **localtunnel** 
+    - Easily share work on your local machine
+    - Ultra-versatile
+    - setup 
+        - `npm install localtunnel -g`
+        - start your app then `lt --port 5001`
+2. **ngrok**
+    - secure tunnel to your local machine
+    - setup
+        - signup
+        - install ngrok
+        - install authtoken
+        - start your app
+        - ../ngrok http 80
+3. **Now**
+    - Quickly deploy nodejs to the cloud
+    - no firewall hole
+    - hosting persists
+    - setup
+        - `npm install -g now`
+        - create start script
+        - now
+4. **surge** 
+    - Quickly host static files to server
+    - no firewall hole
+    - hosting persists
+    - setup
+        - `npm install -g surge`
+        - surge
+
+We will recommend localtunnel
+
