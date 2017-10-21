@@ -4,10 +4,12 @@
     "description": "Just start coding project",
     "main": "index.js",
     "scripts": {
-        "start": "node buildScripts/srcServer.js",
+        "start": "npm-run-all --parallel security-check open:src",
+        "open:src": "node buildScripts/srcServer.js",
         "prestart": "node buildScripts/startMessage.js",
         "security-check": "nsp check",
-        "share": "lt --port 5001"
+        "localtunnel": "lt --port 5001",
+        "share": "npm-run-all --parallel open:src localtunnel"
     },
     "repository": {
         "type": "git",

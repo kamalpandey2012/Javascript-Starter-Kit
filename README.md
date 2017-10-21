@@ -246,4 +246,22 @@ console.log(chalk.green('starting app in dev mode ...));
 "security-check": "nsp check",
 "share":"lt --port 5001"
 ```
-
+### 3.7.6 running concurrent tasks
+1. Modify the start script to run more than one script in parallel
+```
+"start":"npm-run-all --parallel security-check open:src",
+"open:src":"node buildScripts/srcServer.js"
+```
+2. Change the share script to run the local server and localtunnel simultaneouly 
+```
+"localtunnel":"lt --port 5001",
+"share":"npm-run-all --parallel open:src localtunnel"
+```
+**Note**: Other than start and test script use following command in terminal
+```
+npm run scriptName
+```
+for example to run share script use 
+```
+npm run share
+```
