@@ -1,5 +1,5 @@
-# Javascript Development Environment For Konfinity
-## Why we need a starter kit
+# FSDS-3 Javascript Development Environment For Konfinity
+## 3.1 Why we need a starter kit
 1. Codifies
     - Decisions
     - Best Practices
@@ -10,7 +10,7 @@
 5. Avoid repeating work
 
 A starter kit a living, automated and interactive checklist. Developers know what to do but it's easier to overlook step
-## What belongs in the starter kit
+## 3.2 What belongs in the starter kit
 - package management
 - Bundling
 - Minification
@@ -28,7 +28,7 @@ A starter kit a living, automated and interactive checklist. Developers know wha
 - Automated Deployment
 - Working Example app
 
-## What to look for in an Editor
+## 3.3 What to look for in an Editor
 1. Strong ES2015+ Support
     - Autocompletion
     - Parse ES6 imports
@@ -45,17 +45,17 @@ Some of recommended editors
 3. Brackets
 4. VScode
 
-### EditorConfig for better consistency (.editorconfig)
+### 3.3.1 EditorConfig for better consistency (.editorconfig)
 No need for whole organization to have same editor. One can achieve better consistency by using .editorconfig file in root of your project and commiting it to git so that all team members could use same kind of editor styles
 check editorconfig.org This website provides basic editorconfig file for major editors. Some of them needs plugins to enable this file.
 
-## Javascript Package managers
-### Some popular ones
+## 3.4 Javascript Package managers
+### 3.4.1 Some popular ones
 1. **Bower** - Initially it dubbed itself as package manager for web but today largely people moved away from bower to npm. It became popular by supporting entire libraries and frameworks in a format that didn't require a build step but today's almost everyone has a build step in their project so this big advantage became a huge bottleneck
 2. **npm** - It has almost every library for frontend as well as backend along with a strong support for scripting.
 3. **jspm** - Not a very popular but interesting option that helps build your package from its own repository of packages as well as other locations such as git and npm repos. In front of powerful bundlers of npm it's too early to start in production with jspm
 
-### Working with node
+### 3.4.2 Working with npm
 1. Install node
 2. Rum command `npm init` and check all options by editing or just using return key
 3. Install the following package 
@@ -63,7 +63,7 @@ check editorconfig.org This website provides basic editorconfig file for major e
  ```
  npm install --save-dev package names
  ```
-## Package Security
+## 3.5 Package Security
 It is very easy to note that anyone could publish packages in npm repository so to have a security barrier is of prime importance. Many packages to work for this problem like retire.js or node security platform 
 
 To check for vulnerabilities in our installed packages run the following command 
@@ -76,13 +76,13 @@ npm install -g nsp
 nsp check
 ```
 
-## Development web server
+## 3.6 Development web server
 ### Tasks
 1. Review Development webserver options
 2. Configure a development webserver
 3. Services for sharing your work
 
-### Some Options
+### 3.6.1 Some Options
 1. **http-server** 
     - ultra simple
     - Simple command servers current directory
@@ -109,7 +109,7 @@ nsp check
 
 Out of this pool of dev-Servers we will be pulling express
 
-### Integrate Express
+### 3.6.2 Integrate Express
 1. Start by creating a folder buildScripts folder in the root then inside that create a file srcServer.js
 2. In that srcServer.js file add express code that we will discuss in separate express course. Link will be uploaded here only when course is ready
 ```
@@ -156,10 +156,10 @@ node buildScripts/srcServer.js
 ```
 This should open the webpage in the browser with h1 tag
 
-### Sharing work in progress
+### 3.6.3 Sharing work in progress
 One option is to deploy directly to AWS or any other hosting service but that consume time and money so it they both are important to you keep reading
 
-#### Options for sharing
+#### 3.6.3.1 Options for sharing
 1. **localtunnel** 
     - Easily share work on your local machine
     - Ultra-versatile
@@ -190,5 +190,60 @@ One option is to deploy directly to AWS or any other hosting service but that co
         - `npm install -g surge`
         - surge
 
-We will recommend localtunnel
+We'll recommend **localtunnel**
+
+## 3.7 Automation
+### 3.7.1 Options
+1. **Grunt**
+    - The original
+    - configuration over code
+    - Writes intermediatery files between steps
+    - large plugin ecosystem
+2. **Gulp**
+    - In-memory streams
+    - fast
+    - code over configuration
+    - Large plugin ecosystem
+3. **npm scripts**
+    - Declared in package.json
+    - leverage your os command line
+    - directly use npm packages
+    - call separate node scripts
+    - convention based pre/post hooks
+    - leverage world's largest package manager
+
+### 3.7.2 Why npm scripts 
+   - Use tools directly
+   - no need for separate plugin
+   - simpler debugging
+   - better docs
+   - easy to learn
+   - simple
+
+### 3.7.3 npm scripts
+1. find key "scripts" inside package.json file and add start script by pasting the following code inside the "scripts" tag in package.json file
+```
+"start":"node buildScripts/srcServer.js"
+```
+2. Now run server by typing the following command in the terminal 
+```
+npm start 
+```
+**Note**: start and test scripts are special scripts that could be directly called otherwise the general method for running scripts is `npm run scriptName`
+
+### 3.7.4 adding pre/post hook to start script
+1. start by creating a file inside buildScripts folder named startMessage.js, as name signifies it will create a message before running of start script. The contents of that file are as follows
+```
+var chalk = require('chalk');
+console.log(chalk.green('starting app in dev mode ...));
+```
+2. Add following code after start script code you pasted earlies (don't forget to add 'comma' after start script).
+```
+"prestart":"node buildScripts/startMessage.js"
+```
+### 3.7.5 Creating security check and share script
+```
+"security-check": "nsp check",
+"share":"lt --port 5001"
+```
 
