@@ -265,3 +265,90 @@ for example to run share script use
 ```
 npm run share
 ```
+## 3.8 Transpiling
+Previously JS didn't get any update for almost a decade but in recent time it has been committed to get an update every year so you could expect to see a greater trend in transpilers as browsers need some time to test and deploy new features of JS
+
+1999 - 2009 -> ES3 - ES5
+
+2009 - 2015 -> ES5 - ES6
+
+2015 - 2016 -> ES6 - ES7
+
+### 3.8.1 Popular Transpilers
+1. **Babel** 
+    - Write standarized JS
+    - Leverage Full JS ecosystem
+    - Use experimental features earlier
+    - No type definitions or annotations required
+    - ES6 imports are statically analyzable
+2. **TypeScript**
+    - Superset of JS
+    - Enhanced Readability
+    - Enhanced Autocompletion (due to type safety)
+    - Safer refactoring
+    - Additional non-standard features
+3. **Elm**
+    - Compiles down to JS
+    - Clean syntax
+    - Immutable data structures
+    - Friendly errors
+    - All errors are compile time errors
+
+We will recommend babel because of standard js support. 
+
+### 3.8.2 Why transpile
+1. ES5
+    - No waiting for transpiler
+    - No transpiler dependency
+2. Transpiled
+    - Can use the latest features
+    - can eventually remove transpiler
+    - The Switch between upper versions becomes less painful.
+
+### 3.8.3 Setting up babel
+1. Create .babelrc file into the project root in it paste the following content that tells babel to use latest preset
+```
+{
+    "presets": [
+        "latest"
+    ]
+}
+```
+2. Change the file startMessage.js to es6 code ie. change in the import statement
+```
+import chalk from 'chalk';
+console.log(chalk.green('Starting app in dev mode ...'));
+```
+3. Now change the prestart script in package.json file with 
+```
+"prestart":"babel-node buildScripts/startMessage.js"
+```
+4. Now run the start script and check wheter the green color message is visible in terminal. 
+5. Change the srcServer.js file to support ES6
+```
+import express from 'express';
+import path from 'path';
+import open from 'open';
+
+const port = 5001;
+const app = express();
+
+app.get('/', function(req, res){
+res.sendFile(path.join(__dirname, '../src/index.html'));
+});
+
+app.listen(port, function(err){
+    if(err){
+console.log(err);
+    }
+else{
+open('http://localhost:'+port);
+}
+});
+```
+6. Add babel-node to the open:src script (refer step 3)
+
+
+
+
+

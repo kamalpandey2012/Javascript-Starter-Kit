@@ -5,8 +5,8 @@
     "main": "index.js",
     "scripts": {
         "start": "npm-run-all --parallel security-check open:src",
-        "open:src": "node buildScripts/srcServer.js",
-        "prestart": "node buildScripts/startMessage.js",
+        "open:src": "babel-node buildScripts/srcServer.js",
+        "prestart": "babel-node buildScripts/startMessage.js",
         "security-check": "nsp check",
         "localtunnel": "lt --port 5001",
         "share": "npm-run-all --parallel open:src localtunnel"
