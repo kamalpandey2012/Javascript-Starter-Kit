@@ -500,6 +500,80 @@ debugger;
 ```
 now run the code. It will stop at the debugger at the same file with original code.
 
+## 3.10 Linting
+- Enforces Consistency 
+    - Curly brace position
+    - confirm / alert
+    - Trailing commas
+    - Globals 
+    - eval
+- Avoids Mistakes
+    - Extra parenthesis
+    - Overwriting functions
+    - Assignment in conditionals
+    - Missing default case in switch
+    - debugger / console.log
+## 3.10.1 Popular Linters
+- Jslint
+- JSHint
+- ESlint (most popular and robust)
+
+For working in Typescript use TSlint until ESlint adds support for linting
+
+## 3.10.2 Configuring ESlint
+Core decisions
+- config format?
+- which build-in rules?
+- Warning or errors?
+- Which plugins
+- Use preset instead?
+
+1. Create eslintrc file at root project level
+```
+{
+    "root": true,
+    "extends": [
+        "eslint:recommended",
+        "plugin:import/errors",
+        "plugin:import/warnings"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 7,
+        "sourceType": "module"
+    },
+    "env": {
+        "browser": true,
+        "node": true,
+        "mocha": true
+    },
+    "rules": {
+        "no-console": "warn"
+    }
+}
+```
+2. Add lint script in package.json script tag
+```
+"lint": "esw webpack.config.* src buildScripts --color"
+```
+3. Run lint task by typing the following command 
+```
+npm run lint
+```
+4. you will be getting some errors at following line before the console.log statement
+```
+/* eslint-disable no-console */
+```
+this will supress eslint warning
+
+5. Make eslint watch files
+```
+"lint:watch":"npm run lint -- --watch"
+```
+modify start task to run lint task simultaneouly
+```
+"start":"npm-run-all --parallel security-check open:src lint:watch"
+```
+
 
 
 

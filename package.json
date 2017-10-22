@@ -4,12 +4,14 @@
     "description": "Just start coding project",
     "main": "index.js",
     "scripts": {
-        "start": "npm-run-all --parallel security-check open:src",
+        "start": "npm-run-all --parallel security-check open:src lint:watch",
         "open:src": "babel-node buildScripts/srcServer.js",
         "prestart": "babel-node buildScripts/startMessage.js",
         "security-check": "nsp check",
         "localtunnel": "lt --port 5001",
-        "share": "npm-run-all --parallel open:src localtunnel"
+        "share": "npm-run-all --parallel open:src localtunnel",
+        "lint": "esw webpack.config.* src buildScripts --color",
+        "lint:watch": "npm run lint -- --watch"
     },
     "repository": {
         "type": "git",
