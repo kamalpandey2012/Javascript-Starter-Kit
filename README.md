@@ -58,20 +58,20 @@ check editorconfig.org This website provides basic editorconfig file for major e
 ### 3.4.2 Working with npm
 1. Install node
 2. Rum command `npm init` and check all options by editing or just using return key
-3. Install the following package 
-`babel-cli babel-core babel-loader babel-preset-latest babel-register chai chalk cheerio cross-env eslint eslint-plugin-import eslint-watch express html-webpack-plugin jsdom localtunnel mocha nock npm-run-all nsp numeral open rimraf webpack webpack-dev-middleware webpack-hot-middleware webpack-md5-hash` by running command
+3. Install the following package
+`babel-cli babel-core babel-loader babel-preset-latest babel-register chai chalk cheerio cross-env eslint eslint-plugin-import eslint-watch express html-webpack-plugin jsdom localtunnel mocha nock npm-run-all nsp numeral open rimraf webpack webpack-dev-middleware webpack-hot-middleware webpack-md5-hash css-loader style-loader` by running command
  ```
  npm install --save-dev package names
  ```
 ## 3.5 Package Security
-It is very easy to note that anyone could publish packages in npm repository so to have a security barrier is of prime importance. Many packages to work for this problem like retire.js or node security platform 
+It is very easy to note that anyone could publish packages in npm repository so to have a security barrier is of prime importance. Many packages to work for this problem like retire.js or node security platform
 
-To check for vulnerabilities in our installed packages run the following command 
-1. first install it globally by running command 
+To check for vulnerabilities in our installed packages run the following command
+1. first install it globally by running command
 ```
 npm install -g nsp
 ```
-2. Run for security check 
+2. Run for security check
 ```
 nsp check
 ```
@@ -83,18 +83,18 @@ nsp check
 3. Services for sharing your work
 
 ### 3.6.1 Some Options
-1. **http-server** 
+1. **http-server**
     - ultra simple
     - Simple command servers current directory
 2. **live-server**
     - light-weight
     - support live reloading
-3. **express** 
+3. **express**
     - Comprehensive
     - Highly configurable
     - Production grade
     - Can run it everywhere
-4. **budo** 
+4. **budo**
     - Integrates with browserify
     - Includes **hot-reloading**
 5. **webpack-dev-server**
@@ -160,10 +160,10 @@ This should open the webpage in the browser with h1 tag
 One option is to deploy directly to AWS or any other hosting service but that consume time and money so it they both are important to you keep reading
 
 #### 3.6.3.1 Options for sharing
-1. **localtunnel** 
+1. **localtunnel**
     - Easily share work on your local machine
     - Ultra-versatile
-    - setup 
+    - setup
         - `npm install localtunnel -g`
         - start your app then `lt --port 5001`
 2. **ngrok**
@@ -182,7 +182,7 @@ One option is to deploy directly to AWS or any other hosting service but that co
         - `npm install -g now`
         - create start script
         - now
-4. **surge** 
+4. **surge**
     - Quickly host static files to server
     - no firewall hole
     - hosting persists
@@ -212,7 +212,7 @@ We'll recommend **localtunnel**
     - convention based pre/post hooks
     - leverage world's largest package manager
 
-### 3.7.2 Why npm scripts 
+### 3.7.2 Why npm scripts
    - Use tools directly
    - no need for separate plugin
    - simpler debugging
@@ -225,9 +225,9 @@ We'll recommend **localtunnel**
 ```
 "start":"node buildScripts/srcServer.js"
 ```
-2. Now run server by typing the following command in the terminal 
+2. Now run server by typing the following command in the terminal
 ```
-npm start 
+npm start
 ```
 **Note**: start and test scripts are special scripts that could be directly called otherwise the general method for running scripts is `npm run scriptName`
 
@@ -252,7 +252,7 @@ console.log(chalk.green('starting app in dev mode ...));
 "start":"npm-run-all --parallel security-check open:src",
 "open:src":"node buildScripts/srcServer.js"
 ```
-2. Change the share script to run the local server and localtunnel simultaneouly 
+2. Change the share script to run the local server and localtunnel simultaneouly
 ```
 "localtunnel":"lt --port 5001",
 "share":"npm-run-all --parallel open:src localtunnel"
@@ -261,7 +261,7 @@ console.log(chalk.green('starting app in dev mode ...));
 ```
 npm run scriptName
 ```
-for example to run share script use 
+for example to run share script use
 ```
 npm run share
 ```
@@ -275,7 +275,7 @@ Previously JS didn't get any update for almost a decade but in recent time it ha
 2015 - 2016 -> ES6 - ES7
 
 ### 3.8.1 Popular Transpilers
-1. **Babel** 
+1. **Babel**
     - Write standarized JS
     - Leverage Full JS ecosystem
     - Use experimental features earlier
@@ -294,7 +294,7 @@ Previously JS didn't get any update for almost a decade but in recent time it ha
     - Friendly errors
     - All errors are compile time errors
 
-We will recommend babel because of standard js support. 
+We will recommend babel because of standard js support.
 
 ### 3.8.2 Why transpile
 1. ES5
@@ -319,11 +319,11 @@ We will recommend babel because of standard js support.
 import chalk from 'chalk';
 console.log(chalk.green('Starting app in dev mode ...'));
 ```
-3. Now change the prestart script in package.json file with 
+3. Now change the prestart script in package.json file with
 ```
 "prestart":"babel-node buildScripts/startMessage.js"
 ```
-4. Now run the start script and check wheter the green color message is visible in terminal. 
+4. Now run the start script and check wheter the green color message is visible in terminal.
 5. Change the srcServer.js file to support ES6
 ```
 import express from 'express';
@@ -347,6 +347,161 @@ open('http://localhost:'+port);
 });
 ```
 6. Add babel-node to the open:src script (refer step 3)
+
+## 3.9 Module Formats
+### 3.9.1 -  5 module patterns
+1. IIFE
+2. Asynchronous Module Definition (AMD)
+3. Common JS
+4. Universal Module Definition (UMD)
+5. ES6 Module pattern
+
+examples of each module definition
+1. Global
+```
+//Global
+myGlobal;
+```
+2. IIFE
+```
+(function(){
+    //my code here
+})();
+```
+3. AMD
+```
+define(['jq'], function(jq){
+});
+```
+4. Common JS
+```
+var jquery = require('jquery')
+```
+5. ES6 module pattern
+```
+import jquery from 'jquery';
+```
+## 3.9.2 Why use ES6 module
+1. standarized
+2. Statically analysed
+    - Improved autocomplete
+    - Intelligent refractoring
+    - Fails fast
+    - Tree shaking
+3. Easy to read
+    - named imports
+    - Default imports
+## 3.9.3 Selecting the bundlers
+1. Require JS
+    - First popular bundler
+    - Utilizes and helped popularize AMD pattern
+2. Browserify
+    - The first bundler to reach mass adoption
+    - Bundle npm package for the web
+    - Large plugin ecosystem
+    - Final verdict - Simple
+3. Webpack
+    - Bundles more than JS
+    - Imports images, css etc like JS
+    - Build in hot reloading web server
+    - Final verdict - Comprehensive
+4. Rollup
+    - Tree shaking
+    - Faster loading production code
+    - Quite new
+    - Great for library authors
+    - No hot reloading and code splitting yet
+    - Final verdict - Tree shaking and performance
+5. JSPM
+    - Uses SystemJS, a universal module loader
+    - can load modules at runtime
+    - Has its own package manager
+    - can install from npm and git
+    - Uses rollup
+    - Final Verdict - Runtime loader and package manager
+
+## 3.9.4 Why webpack
+-  Much more than just JS
+    - CSS
+    - Images
+    - Fonts
+    - HTML
+- Bundle splitting
+- Hot module Reloading
+## 3.9.5 Webpack setup
+1. Create a file webpack.config.dev.js
+and paste the following content in it
+```
+import webpack from 'webpack';
+import path from 'path';
+
+export default {
+  devtool: 'inline-source-map',
+  entry: [
+    path.resolve(__dirname, 'src/index')
+  ],
+  target: 'web',
+  output: {
+    path: path.resolve(__dirname, 'src'),
+    publicPath: '/',
+    filename: 'bundle.js'
+  },
+  plugins: [
+    new webpack.LoaderOptionsPlugin({
+        debug: true,
+        noInfo: false,
+      })
+  ],
+  module: {
+    rules: [
+      {test: /\.js$/, exclude: /node_modules/, loaders: ['babel-loader']},
+      {test: /\.css$/, loaders: ['style-loader','css-loader']}
+    ]
+  }
+}
+```
+2. Change srcServer.js file to accomodate changes
+```
+//add code for imports
+import webpack from 'webpack';
+import config from '../webpack.config.dev.js'
+
+//add code to initialize compiler
+const compiler = webpack(config);
+
+//add middleware to compile befor running
+app.use(require('webpack-dev-middleware')(compiler,{
+    noInfo: true,
+    publicPath:config.output.publicPath
+}));
+```
+3. add file in src folder with name index.js with following content
+```
+import numeral from 'numeral';
+
+const courseValue =numeral(1000).format('$0,0.00');
+console.log(`i would pay ${courseValue} for this awesome course`);
+```
+## 3.9.6 Adding css
+1. Add file styles.css in src folder with some style in it and import it in top of css file
+```
+import './styles.css';
+```
+Top of index.js file
+
+## 3.9.7 Source map
+- maps code back to original source
+- part of our build
+- Download if you open developer tools
+
+Add debugger to index.js file
+```
+debugger;
+```
+now run the code. It will stop at the debugger at the same file with original code.
+
+
+
 
 
 
