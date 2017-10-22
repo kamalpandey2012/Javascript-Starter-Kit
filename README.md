@@ -501,11 +501,11 @@ debugger;
 now run the code. It will stop at the debugger at the same file with original code.
 
 ## 3.10 Linting
-- Enforces Consistency 
+- Enforces Consistency
     - Curly brace position
     - confirm / alert
     - Trailing commas
-    - Globals 
+    - Globals
     - eval
 - Avoids Mistakes
     - Extra parenthesis
@@ -555,7 +555,7 @@ Core decisions
 ```
 "lint": "esw webpack.config.* src buildScripts --color"
 ```
-3. Run lint task by typing the following command 
+3. Run lint task by typing the following command
 ```
 npm run lint
 ```
@@ -573,7 +573,161 @@ modify start task to run lint task simultaneouly
 ```
 "start":"npm-run-all --parallel security-check open:src lint:watch"
 ```
+## 3.11 Testing and Continuous Integration
+### 3.11.1 Javascript testing styles
+1. Unit - Single function or module
+2. Integration - Interaction between modules
+3. UI - Automated interactions with ui
 
+### 3.11.2 Unit test decisions
+1. Framework
+    - Mocha
+    - Jasmine
+    - Tape
+    - QUnit
+    - AVA
+    - Jest
+2. Assert Library
+    -What is assertion
+    ```
+    //Declare what you expect
+    expect(2+2).to.equal(4)
+    assert(2+2).equals(4)
+    ```
+    Most popular library is chai others are should.js, expect
+3. Helper Libraries
+    - JSDOM
+        - simulate the browser's DOM
+        - Run DOm related tests without browser
+    - Cheerio
+        - jQuery for the server
+        - Query virtual DOM using jQuery selectors
+4. Where to run tests
+    - Browser
+        - Karma, Testem
+    - Headless browser
+        - PhantomJS
+    - In-memory Dom
+        - JSDOM
+5. Where to place tests
+    - Centralized
+        - Less "noise" in src folder
+        - Deployment confusion
+        - Inertia
+    - Alongside
+        - Easy imports
+        - Clear visibility
+        - Convenient to open
+        - No recreating folder structure
+        - Easy file moves
+6. When to run tests
+    - Unit tests
+        - Test a small unit
+        - Often single function
+        - Fast
+        - Run upon save
+    - Integration tests
+        - Test multiple units
+        - Often involves clicking and waiting
+        - slow
+        - often run on demand, or in QA
+
+After discussing with pros and cons we settled down to these decisions
+Framework: mocha, assertion-library: chai, Helper-libraries: JSDOM, Where to run tests: Node, Where to place tests: alongside, when to run tests: upon save
+
+### 3.11.3 Normal Test setup
+1. Create file testSetup.js in buildScripts folder with following content
+```
+require('babel-register')();
+require.extensions['.css'] = function(){}
+```
+2. Create test script in package.json file with following code
+```
+"test": "mocha --reporter progress buildScripts/testSetup.js \"src/**/*.test.js\""
+```
+3. Create index.test.js file in src folder with following content
+```
+import {expect} from 'chai';
+
+describe('our first test',() =>{
+    it('should pass',() => {
+        expect(true).to.equal(true);
+    });
+});
+```
+4. Run test by running following command in terminal
+```
+npm test
+```
+This test should pass as true is equal to true. To make this test fail use true is equal to false in index.test.js file.
+
+### 3.11.4 DOM Testing
+Add following code into your index.test.js file
+```
+//in imports
+import fs from 'fs';
+import jsdom from 'jsdom';
+const {JSDOM} = jsdom;
+
+// describe dom test
+describe('index.html',()=>{
+    it('should konfinity dashboard', (done) =>{
+        const index = fs.readFileSync('./src/index.html', 'utf-8');
+        const dom = new JSDOM(index);
+            const h1 = dom.window.document.getElementsByTagName('h1')[0];
+
+            expect(h1.innerHTML).to.equal('Starter Kit');
+            done();
+            window.close();
+    })
+})
+```
+now run test to check for result
+
+### 3.11.5 Watching tests
+add following command to scripts
+```
+"test:watch":"npm run test -- --watch"
+```
+run this task simultaneouly with other start scripts by modifying start script
+```
+"start": "npm-run-all --parallel security-check open:src lint:watch test:watch",
+```
+
+## 3.12 Continuous Integration
+### 3.12.1 Why CI
+1. Forget to commit new file
+2. Forget to update package.json
+3. Commit doesn't run cross plateform
+4. Node version conflict
+5. Bad merge
+6. Didn't run tests
+7. Catch mistakes quickly
+
+### 3.12.2 What does a CI server do?
+1. Run Automated build
+2. Run your tests
+3. Check code coverage
+4. Automate deployement
+
+### 3.12.3 Choosing a CI server (options)
+1. Travis (Linux based)
+2. Appveyor (Windows based)
+3. Jenkins (Highly configurable)
+4. circleCi 
+5. semaphore
+6. snapCi
+
+Jenkins and Travis are most popular ones so have large support
+
+### 3.12.4 Setting up Travis
+1. visit https://travis-ci.org. signup using your github profile then it will take few seconds to redirect to your profile page
+2. Create a file .travis.yml (configuration file) at root of the project with the following code
+```
+language: node_js
+node_js:
+  - "6"
+```
 
 
 
