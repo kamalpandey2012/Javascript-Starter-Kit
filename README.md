@@ -714,7 +714,7 @@ run this task simultaneouly with other start scripts by modifying start script
 1. Travis (Linux based)
 2. Appveyor (Windows based)
 3. Jenkins (Highly configurable)
-4. circleCi 
+4. circleCi
 5. semaphore
 6. snapCi
 
@@ -728,6 +728,249 @@ language: node_js
 node_js:
   - "6"
 ```
+3. commit and push the code to github. Travis dashboard will show creation of your desired environment on linux and running test so that you could be confident enough to deploy your code to production
+
+## 3.13 HTTP calls
+### 3.13.1 HTTP calls approach
+1. node
+    - http
+    - request
+2. Browser
+    - XMLHttpRequest
+    - jquery
+    - Fetch
+3. Node and Browser
+    - isomorphic-fetch
+    - xhr
+    - superagent
+    - axios
+### 3.13.2 Why centralize Api Calls?
+- Configure all calls
+- Handle preloader logic
+- Handle errors
+- Single seam for mocking
+
+### 3.13.3 Setting up centralized calls
+1. Add a mock url and api to srcServer.js file with following code
+```
+app.get('/users', function(req, res){
+res.json([
+{"id":1, "firstname":"kamal", "lastname":"pandey", "email":"xyz@konfinity.com" },
+{"id":2, "firstname": "agent", "lastname":"smith", "email":"new@matrix.com"},
+{"id":3, "firstname":"good", "lastname":"god", "email":"heaven@god.com"}
+]);
+});
+```
+2. Create a file userApi.js in api folder inside src folder with following code
+```
+import 'whatwg-fetch';
+
+export function getUser(){
+return get('users');
+}
+
+function get(url){
+return fetch(url).then(onSuccess, onError);
+}
+
+function onSuccess(response){
+return response.json();
+}
+
+function onError(error){
+console.log(error) //eslint-disable-line no-console
+}
+```
+3. Install whatwg-fetch by typing following command in terminal
+```
+npm install --save whatwg-fetch
+```
+4. Remove all previous code from index.js file and add following code in it
+```
+import './styles.css';
+
+import {getUser} from './api/userApi';
+
+getUser().then(result =>{
+    let userBody = "";
+result.forEach(user => {
+userBody +=`<tr>
+<td><a href="#" data-id="${user.id}" class="deleteUser">Delete</a></td>
+<td>${user.id}</td>
+<td>${user.firstname}</td>
+<td>${user.lastname}</td>
+<td>${user.email}</td>
+</tr>`
+});
+global.document.getElementById('users').innerHTML = userBody;
+});
+```
+
+5. Add table content into html file 
+```
+<table>
+        <thead>
+            <th>&nbsp;</th>
+            <th>id</th>
+            <th>first name</th>
+            <th>last name</th>
+            <th>email</th>
+        </thead>
+        <tbody id="users">
+
+        </tbody>
+</table>
+```
+### 3.13.4 Selective polyfilling
+Detects polyfills according to browser. check polyfill.io website for more details. To polyfill use following code
+```
+<script src="https://cdn.polyfill.io/v2/polyfill.js?features=fetch">
+</script>
+```
+## 3.14 Mocking HTTP
+### 3.14.1 Why mock HTTP
+- Unit testing
+- Instant response
+- Keep working when services are down
+- Rapid Prototyping
+- Avoid interteam bottlenecks
+- Work offline
+
+### 3.14.2 Methods for mocking HTTP
+In decreasing order of upfront work and increasing order of realism and customizations
+1. Static JSON
+2. Json server 
+3. JSON Server + JSON schema faker
+4. Express, etc
+
+### 3.14.3 Mocking Strategy for this starter kit
+1. Declare our schema:
+    - JSON Schema faker
+2. Generate Random Data
+    - faker.js
+    - chance.js
+    - randexp.js
+3. Serve Data via API
+    - JSON server
+
+### 3.14.4 Steps
+1. Creating the mock api data. Create a file named mockDataSchema.js in buildScripts and paste the following code
+```
+export const schema = {
+    "type": "object",
+    "properties": {
+      "users": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 5,
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "unique": true,
+              "minimum": 1
+            },
+            "firstName": {
+              "type": "string",
+              "faker": "name.firstName"
+            },
+            "lastName": {
+              "type": "string",
+              "faker": "name.lastName"
+            },
+            "email": {
+              "type": "string",
+              "faker": "internet.email"
+            }
+          },
+          "required": ["id", "firstName", "lastName", "email"]
+        }
+      }
+    },
+    "required": ["users"]
+  };
+```
+2. Generate mock data. Create a file genarateMockData.js file in buildScripts folder with the following code. 
+```
+import jsf from 'json-schema-faker';
+import{schema} from './mockDataSchema';
+import fs from 'fs';
+import chalk from 'chalk';
+
+/* eslint-disable no-console*/
+const json = JSON.stringify(jsf(schema));
+fs.writeFile('./src/api/db.json', json, function(err){
+if(err){
+return console.log(chalk.red(err));
+}
+else{
+console.log(chalk.green('mock data generated'));
+}
+});
+```
+3. Create a script to generate data in package.json with following code
+```
+"generate-mock-data": "babel-node buildScripts/generateMockData",
+```
+It will create a db.json file in src/api folder with some fake data
+4. Start a mock-api-data server by creating a script in package.json file
+```
+ "prestart-mockapi": "npm run generate-mock-data",
+ "start-mockapi": "json-server --watch src/api/db.json --port 3001"
+ ```
+ 5. change the start script with the following code
+ ```
+"start": "npm-run-all --parallel security-check start-mockapi open:src lint:watch test:watch",
+```
+6. create a file baseUrl.js in src/api folder to detect the url so that it could serve from the mock api in case of localhost and from express server in case of some other url
+```
+export default function getBaseUrl(){
+const inDevelopment =window.location.hostname === 'localhost';
+return inDevelopment? 'http://localhost:3001/':'/';
+}
+```
+7. Import this url file in src/api/userApi.js file with the following code
+```
+import getBaseUrl from './baseUrl';
+const baseUrl = getBaseUrl();
+...
+function get(url){
+return fetch(baseUrl + url).then(onSuccess, onError);
+}
+```
+8. Run the server with `npm start` command it will run the mock api json server and will serve from there
+
+9. Manipulating data via json server - Add following code to src/api/userApi.js file to delete the user
+```
+export function deleteUser(id){
+return del(`users/${id}`);
+}
+function del(url){
+    const request =new Request(baseUrl + url, {
+        method:'DELETE'
+    });
+
+    return fetch(request).then(onSuccess, onError);
+
+}
+```
+10. Add delete button functionality to the ui of the application by adding following code to index.js file
+```
+const deleteLinks = global.document.getElementsByClassName('deleteUser');
+Array.from(deleteLinks, link =>{
+link.onclick = function(event){
+const element =event.target;
+event.preventDefault();
+deleteUser(element.attributes['data-id'].value);
+const row =element.parentNode.parentNode;
+row.parentNode.removeChild(row);
+}
+});
+```
+11. The Application will display the delete button, clicking that will delete the table row from ui as well as db.json
+
+
 
 
 
