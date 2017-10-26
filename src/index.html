@@ -5,6 +5,16 @@
     <title>Starter Application</title>
     <meta charset="utf-8">
     <meta name="keywords" content="javascript, good practices, starter kit, from testing to deployment">
+    <% if(htmlWebpackPlugin.options.trackJSToken){%>
+        <!-- BEGIN TRACKJS -->
+        <script type="text/javascript">
+            window._trackJs = {
+                token: '<%= htmlWebpackPlugin.options.trackJSToken%>'
+            };
+        </script>
+        <script type="text/javascript" src="https://cdn.trackjs.com/releases/current/tracker.js"></script>
+        <!-- END TRACKJS -->
+        <% } %>
 </head>
 
 <body>
@@ -21,7 +31,6 @@
 
         </tbody>
     </table>
-    <script src="bundle.js"></script>
 </body>
 
 </html>

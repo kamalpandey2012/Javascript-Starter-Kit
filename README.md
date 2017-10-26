@@ -970,10 +970,305 @@ row.parentNode.removeChild(row);
 ```
 11. The Application will display the delete button, clicking that will delete the table row from ui as well as db.json
 
+## 3.15 Production build
+### 3.15.1 Minification
+- Shortens variable and function names
+- Removes comments
+- Removes whitespace and new lines
+- Dead code elimination / tree shaking
+- Debug via source maps
+
+### 3.15.1.1 Production webpack configuration
+1. create a file webpack.config.prod.js at root of the project
+2. Inside that copy and paste the code of webpack.config.dev.js
+3. change devtools key to accept `souce-map` instead of `inline-source-map`
+```
+devtools:'source-map'
+```
+4. In the output find path key and change it to 
+```
+path: path.resolve(__dirname, 'dist'),
+```
+to add path of dist
+
+5. Add plugin in plugins key as 
+```
+new webpack.optimize.UglifyJsPlugin(),
+```
+this will minify the js created in dist folder
+6. create a file build.js in buildScripts folder with the following content 
+```
+import webpack from 'webpack';
+import config from '../webpack.config.prod';
+import chalk from 'chalk';
+
+/*eslint-disable no-console*/
+
+process.env.NODE_ENV = 'production';
+
+console.log(chalk.blue('Generating minified bundle for production. This may take a while ...'));
+
+webpack(config).run((err, stats) => {
+    if(err){
+        console.log(chalk.red(err));
+        return 1;
+    }
+    const jsonStats = stats.toJson();
+    if(jsonStats.hasError){
+return jsonStats.errors.map(error => console.log(chalk.red(error)));
+    }
+if(jsonStats.hasWarning){
+console.log(chalk.yellow('webpack generate the following warning:'));
+jsonStats.warnings.map(warning => console.log(chalk.yellow(warning)));
+}
+console.log(`webpack stats ${stats}`);
+
+console.log(chalk.green('your app has been build for production'));
+    return 0;
+});
+```
+7. create a file distServer.js for serving the production minified build with the following code 
+```import express from 'express';
+import path from 'path';
+import open from 'open';
+import compression from 'compression';
+
+const port = 5001;
+
+const app = express();
+app.use(compression());
+app.use(express.static('dist'));
 
 
+app.get('/', function(req, res){
+res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
 
+app.get('/users', function(req, res){
+res.json([
+{"id":1, "firstName":"kamal", "lastName":"pandey", "email":"xyz@konfinity.com" },
+{"id":2, "firstName": "agent", "lastName":"smith", "email":"new@matrix.com"},
+{"id":3, "firstName":"good", "lastName":"god", "email":"heaven@god.com"}
+]);
+});
 
+app.listen(port, function(err){
+    if(err){
+        /* eslint-disable no-console*/
+console.log(err);
+    }
+else{
+open('http://localhost:'+port);
+}
+});
+```
+there will be new node modules here and there install them via node package manager and you will be fine
+
+8. Toggling the mock api. If on production the api should be from server and while on dev the mock should work. It could be controlled by changing the code  in the baseUrl.js file to following. The function is taken directly from stackoverflow.
+```
+export default function getBaseUrl() {
+    return getQueryStringParameterByName('useMockApi') ? 'http://localhost:5001/' : '/';
+  }
+
+  function getQueryStringParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+  }
+```
+9. Now to use mock api use url parameters like shown below
+http://localhost:3000/user/?mockApi=true. This will ask baseUrl to generate the url to get the data. 
+10. Add scripts in package.json to run production build
+```
+"clean-dist":"rimraf ./dist && mkdir dist",
+"prebuild":"npm-run-all clean-dist test lint",
+"build":"babel-node buildScripts/build.js",
+"postbuild":"babel-node buildScripts/distServer.js"
+```
+now try to run the build process by `npm run build`. It will throw an error as there is no index.html file in the dist folder
+
+### 3.15.1.2 Dynamic HTML generation
+#### Why Change html for production build
+- Reference bundles automatically
+- Handle dynamic bundle names
+- Inject production only  resources
+- Minify
+#### Referencing bunlded assets in HTML
+There are some methods to complete that like
+- Hard code 
+- manipulate via node
+- html-webpack-plugin
+
+Use html-webpack-plugin for dynamic generation of html. Add code in webpack.config.prod.js 
+```
+//import html webpack plugin
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+//inside the plugin property
+new HtmlWebpackPlugin({
+    template:'src/index.html',
+    inject:true
+});
+```
+Remove script tag from index.html in src folder
+
+To minify the html file to reduce size add minify setting to html webpack plugin
+```
+minify:{
+        removeComments: true,
+        collapseWhitespace:true,
+        removeRedundantAttributes:true,
+        useShortDoctype:true,
+        removeEmptyAttributes:true,
+        removeStyleLinkTypeAttributes:true,
+        keepClosingSlash:true,
+        minifyJS:true,
+        minifyCSS:true,
+        minifyURLs:true
+},
+``` 
+this will minify the html file
+#### 3.15.1.3 Bundle splitting
+Why bundle Splitting?
+- Speed initial page load
+- Avoid redownloading all libraries
+
+1. Create a file vendor.js in src folder to import all third party packages with following code
+```
+/* eslint-disable no-unused-var */
+import fetch from 'whatwg-fetch';
+```
+2. Change entry property in webpack.config.prod.js file
+with following code 
+```
+entry: {
+    vendor:path.resolve(__dirname, 'src/vendor'),
+    main:path.resolve(__dirname, 'src/index')
+}
+```
+and in output.filename key
+```
+filename: '[name].[chunkhash].js'
+```
+this will take name from 'entry' and create a file with the same name
+
+and in the plugins key add another plugin
+```
+  new webpack.optimize.CommonsChunkPlugin({
+        name:'vendor'
+    }),
+```
+now run the code with `npm run build`, this will create 2 js files "main.js" and "vendor.js".
+
+#### 3.15.1.4 Cache busting
+Why cache bust
+- save HTTP requests
+- force request for latest version
+
+solutions
+- hash bundle filename
+- Generate HTML dynamically
+
+```
+import WebpackMd5Hash from 'webpack-md5-hash';
+```
+change filename property in output key webpack.config.prod.js file
+```
+filename: '[name].[chunkhash].js'
+```
+and in plugin add this code 
+```
+new WebpackMd5Hash();
+```
+build using `npm run build`, this will generate the js files with hash and will also add the same name to html file
+
+Everytime file changes it will add a new hash to name and declare that file in script of html file so that browser request for this new file. 
+
+#### 3.15.1.5 Extract and minify css
+use plugin extract-text-webpack-plugin. 
+```
+import WebpackTextPlugin from 'webpack-text-webpack-plugin';
+```
+add this plugin into the plugins property
+```
+new ExtractTextPlugin('[name].[contenthash].css'),
+```
+and in the rules change css rule to 
+```
+ {test: /\.css$/, use: ExtractTextPlugin.extract({
+fallback:'style-loader',
+use:'css-loader'
+})
+}
+```
+now run the code using `npm run build` this will create a css file. 
+
+#### 3.15.1.6 Error logging
+For error loggin there are various types of services some of the popular ones are
+- trackJS
+- Sentry
+- new Relic
+- Raygun
+
+JS loggin error what to look for 
+- Error Metadata
+    - Browser
+    - stack trace
+    - previous action
+    - custom API for enhanced tracking
+- Notifications and integration
+- Analytics and filtering 
+- Pricing
+
+We will be using trackJS
+
+1. Signup in their website 
+2. After signup a copy paste script will be created by trackJS 
+3. Add this script to top of the index.html page inside head tag
+```
+ <!-- BEGIN TRACKJS -->
+ <script type="text/javascript">
+            window._trackJs = {
+                token: 'yourToken'
+            };
+        </script>
+        <script type="text/javascript" src="https://cdn.trackjs.com/releases/current/tracker.js"></script>
+        <!-- END TRACKJS -->
+```
+and anywhere in js file add this code
+```
+ try
+ {trackJs.track('ahoy trackjs!');}
+catch(error){}
+```
+This will show 'ahoy trackjs' in trackjs dashboard after running the application. But we want tracking only in production mode.
+
+#### 3.15.1.7 HTML templates via Embedded js(EJS)
+add trackJSToken in webpack.config.prod.js file inside HtmlWebpackPlugin 
+```
+...
+inject:true,
+trackJSToken:'Your token goes here'
+...
+```
+now use templates inside the html file, change add if statement to check whether token available or not. If in production mode it will be read from 'webpack.config.prod.js' file otherwise from 'webpack.config.dev.js' file which don't have token so the tracking will take place only in case of production build
+
+```
+<% if(htmlWebpackPlugin.options.trackJSToken){%>
+    <!-- BEGIN TRACKJS -->
+    <script type="text/javascript">
+        window._trackJs = {
+            token: '<%= htmlWebpackPlugin.options.trackJSToken%>'
+        };
+    </script>
+    <script type="text/javascript" src="https://cdn.trackjs.com/releases/current/tracker.js"></script>
+    <!-- END TRACKJS -->
+<% } %>
+```
+This will add dynamically the token of the trackjs file
 
 
 
